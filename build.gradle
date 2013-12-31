@@ -58,6 +58,7 @@ repositories {
 
 dependencies {
     compile group:'com.tikinou.oss', name:'schedules-direct-core-api', version:'1.9-SNAPSHOT'
+    compile group:'org.springframework', name:'spring-web', version:'4.0.0.RELEASE'
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
