@@ -1,0 +1,242 @@
+/*
+ * Copyright (c) 2013 TIKINOU LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath group:'org.ajoberstar', name:'gradle-git', version:'0.6.3'
+    }
+}
+import org.ajoberstar.gradle.git.tasks.*
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
+ext.versionFile = file('version.properties')
+group = 'com.tikinou.oss'
+
+def sonatypeRepositoryUrl
+
+// set build variables based on build type (release, snapshot, local)
+switch(build_type){
+    case 'release':
+        sonatypeRepositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2'
+        break
+    case 'snapshot':
+        sonatypeRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots'
+        break
+    case 'local':
+    default:
+        sonatypeRepositoryUrl = null
+        build_type = 'local' // in case it is null...
+        break
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+
+dependencies {
+    compile group:'com.tikinou.oss', name:'schedules-direct-core-api', version:'1.9-SNAPSHOT'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
+//************************************
+//********* artifact signing *********
+//************************************
+switch(build_type){
+    case 'release':
+    case 'snapshot':
+        signing {
+            sign configurations.archives
+        }
+        break
+    default:
+        task signArchives {
+            // do nothing
+        }
+        break
+}
+
+uploadArchives {
+    repositories {
+        switch(build_type){
+            case 'snapshot':
+            case 'release':
+                mavenDeployer {
+                    beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+                    repository(url: sonatypeRepositoryUrl) {
+                        authentication(userName: sonatypeUsername, password: sonatypePassword)
+                    }
+
+                    pom.project {
+                        name 'schedules-direct-java'
+                        packaging 'jar'
+                        description 'www.schedulesdirect.org JSON API JAVA Implementation'
+                        url 'https://github.com/Tikinou/schedules-direct-java'
+                        organization {
+                            name 'Tikinou LLC'
+                            url 'http://www.tikinou.com'
+                        }
+                        scm {
+                            url 'git@github.com:Tikinou/schedules-direct-java.git'
+                            connection 'scm:git:git@github.com:Tikinou/schedules-direct-java.git'
+                            developerConnection 'scm:git:git@github.com:Tikinou/schedules-direct-java.git'
+                        }
+
+                        licenses {
+                            license {
+                                name 'Apache License Version 2.0, January 2004'
+                                url ' http://www.apache.org/licenses/LICENSE-2.0'
+                                distribution 'repo'
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id 'tafypz'
+                                // workaround for bug, should be : organization 'Tikinou LLC'
+                                organization = 'Tikinou LLC'
+                                name 'Sebastien Astie'
+                            }
+                        }
+                    }
+                }
+                break
+            case 'local':
+            default:
+                mavenLocal()
+                break
+        }
+    }
+}
+
+//************************************
+//***** Custom Version Handling ******
+//************************************
+task loadVersion {
+    project.version = readVersion()
+}
+
+ProjectVersion readVersion() {
+    logger.quiet 'Reading the version file.'
+
+    if(!versionFile.exists()) {
+        throw new GradleException("Required version file does not exit: $versionFile.canonicalPath")
+    }
+
+    Properties versionProps = new Properties()
+
+    versionFile.withInputStream { stream ->
+        versionProps.load(stream)
+    }
+    new ProjectVersion(versionProps.major.toInteger(), versionProps.minor.toInteger(), build_type == 'release')
+}
+
+task incrementMajorVersion(group: 'versioning', description: 'Increments project major version.') << {
+    String currentVersion = version.toString()
+    ++version.major
+    String newVersion = version.toString()
+    logger.info "Incrementing major project version: $currentVersion -> $newVersion"
+
+    ant.propertyfile(file: versionFile) {
+        entry(key: 'major', type: 'int', operation: '+', value: 1)
+    }
+}
+
+task incrementMinorVersion(group: 'versioning', description: 'Increments project minor version.') << {
+    String currentVersion = version.toString()
+    ++version.minor
+    String newVersion = version.toString()
+    logger.info "Incrementing minor project version: $currentVersion -> $newVersion"
+
+    ant.propertyfile(file: versionFile) {
+        entry(key: 'minor', type: 'int', operation: '+', value: 1)
+    }
+}
+
+class ProjectVersion {
+    Integer major
+    Integer minor
+    Boolean release
+
+    ProjectVersion(Integer major, Integer minor) {
+        this(major, minor, Boolean.FALSE)
+    }
+
+    ProjectVersion(Integer major, Integer minor, Boolean release) {
+
+        this.major = major
+        this.minor = minor
+        this.release = release
+    }
+
+    @Override
+    String toString() {
+        "$major.$minor${release ? '' : '-SNAPSHOT'}"
+    }
+}
+
+//************************************
+//********* Git custom tasks *********
+//************************************
+
+task gitTag(type: GitTag, dependsOn:loadVersion) {
+    tagName = project.version
+    message = "Release of schedules-direct-java-${project.version}"
+}
+
+gitTag.doFirst {
+    if(build_type != 'release')
+        throw new StopExecutionException()
+}
+
+task gitRelease(type:GitPush, dependsOn:gitTag, description: 'Creates the tag for this release and push it the the remote repository.') {
+    credentials {
+        username = githubUsername
+        password = githubPassword
+    }
+    pushTags = true
+}
+
+gitRelease.doFirst {
+    if(build_type != 'release')
+        throw new StopExecutionException()
+}
+
