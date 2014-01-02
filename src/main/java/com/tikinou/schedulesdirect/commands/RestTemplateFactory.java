@@ -23,10 +23,12 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.tikinou.schedulesdirect.core.domain.ResponseCode;
 import com.tikinou.schedulesdirect.core.jackson.ModuleRegistration;
 import com.tikinou.schedulesdirect.core.jackson.converters.ResponseCodeConverter;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -44,6 +46,7 @@ public class RestTemplateFactory {
             if( messageConverter instanceof MappingJackson2HttpMessageConverter) {
                 ObjectMapper objectMapper = ModuleRegistration.getInstance().getConfiguredObjectMapper();
                 MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = (MappingJackson2HttpMessageConverter) messageConverter;
+                mappingJackson2HttpMessageConverter.setSupportedMediaTypes(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML));
                 mappingJackson2HttpMessageConverter.setObjectMapper( objectMapper );
             }
         }

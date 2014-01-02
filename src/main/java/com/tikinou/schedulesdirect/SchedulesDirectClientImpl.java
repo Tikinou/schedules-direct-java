@@ -11,7 +11,7 @@ import com.tikinou.schedulesdirect.core.commands.randhash.RandHashCommand;
 public class SchedulesDirectClientImpl extends AbstractSchedulesDirectClient{
 
     @Override
-    public <T extends Command> T createCommand(Class<T> commandClass) {
+    public <T extends Command<?,?>> T createCommand(Class<T> commandClass) {
         return (T) new RandHashCommandImpl();
     }
 }
