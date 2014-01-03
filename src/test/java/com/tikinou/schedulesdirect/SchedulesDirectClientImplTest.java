@@ -21,10 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
 import com.tikinou.schedulesdirect.core.commands.status.GetStatusCommand;
 import com.tikinou.schedulesdirect.core.commands.status.GetStatusCommandParameters;
-import com.tikinou.schedulesdirect.core.domain.ActionType;
-import com.tikinou.schedulesdirect.core.domain.Credentials;
-import com.tikinou.schedulesdirect.core.domain.ObjectTypes;
-import com.tikinou.schedulesdirect.core.domain.SchedulesDirectApiVersion;
+import com.tikinou.schedulesdirect.core.domain.*;
 import com.tikinou.schedulesdirect.core.exceptions.VersionNotSupportedException;
 import com.tikinou.schedulesdirect.core.jackson.ModuleRegistration;
 import org.junit.Before;
@@ -53,13 +50,15 @@ public class SchedulesDirectClientImplTest {
         assert credentials.getRandhash() == null;
         client.connect(credentials);
         assert credentials.getRandhash() != null;
-        System.out.println("TestConnect success: credentials now " + credentials);
+        System.out.println("TestConnect success: credentials now: " + credentials);
     }
 
     @Test
     public void testMultipleConnect() throws Exception {
         Credentials credentials = createCredentials();
+        assert credentials.getRandhash() == null;
         client.connect(credentials);
+        assert credentials.getRandhash() != null;
         client.connect(credentials);
     }
 
@@ -76,6 +75,8 @@ public class SchedulesDirectClientImplTest {
         GetStatusCommand cmd = client.createCommand(GetStatusCommand.class);
         cmd.setParameters(new GetStatusCommandParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021));
         client.execute(cmd);
+        assert cmd.getStatus() == CommandStatus.SUCCESS;
+        System.out.println(cmd.getResult());
     }
 
 
