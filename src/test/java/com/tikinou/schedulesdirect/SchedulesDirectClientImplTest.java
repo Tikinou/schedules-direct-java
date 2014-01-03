@@ -18,7 +18,14 @@ package com.tikinou.schedulesdirect;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tikinou.schedulesdirect.core.Command;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
+import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommand;
+import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommandParameters;
+import com.tikinou.schedulesdirect.core.commands.program.GetProgramsCommand;
+import com.tikinou.schedulesdirect.core.commands.program.GetProgramsCommandParameters;
+import com.tikinou.schedulesdirect.core.commands.schedules.GetSchedulesCommand;
+import com.tikinou.schedulesdirect.core.commands.schedules.GetSchedulesCommandParameters;
 import com.tikinou.schedulesdirect.core.commands.status.GetStatusCommand;
 import com.tikinou.schedulesdirect.core.commands.status.GetStatusCommandParameters;
 import com.tikinou.schedulesdirect.core.domain.*;
@@ -30,6 +37,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * @author Sebastien Astie
@@ -70,15 +79,53 @@ public class SchedulesDirectClientImplTest {
 
     @Test
     public void testStatus() throws Exception {
-        Credentials credentials = createCredentials();
-        client.connect(credentials);
+        Credentials credentials = connect();
         GetStatusCommand cmd = client.createCommand(GetStatusCommand.class);
         cmd.setParameters(new GetStatusCommandParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021));
-        client.execute(cmd);
-        assert cmd.getStatus() == CommandStatus.SUCCESS;
-        System.out.println(cmd.getResult());
+        executeCommand(cmd);
     }
 
+    @Test
+    public void testLineups() throws Exception {
+        Credentials credentials = connect();
+        GetLineupsCommand cmd = client.createCommand(GetLineupsCommand.class);
+        GetLineupsCommandParameters parameters =  new GetLineupsCommandParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021);
+        parameters.setHeadendIds(Arrays.asList("NY67791"));
+        cmd.setParameters(parameters);
+        executeCommand(cmd);
+    }
+
+    @Test
+    public void testPrograms() throws Exception {
+        Credentials credentials = connect();
+        GetProgramsCommand cmd = client.createCommand(GetProgramsCommand.class);
+        GetProgramsCommandParameters parameters =  new GetProgramsCommandParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021);
+        parameters.setProgramIds(Arrays.asList("EP017398160007", "SH013762600000", "MV003954050000"));
+        cmd.setParameters(parameters);
+        executeCommand(cmd);
+    }
+
+    @Test
+    public void testSchedules() throws Exception {
+        Credentials credentials = connect();
+        GetSchedulesCommand cmd = client.createCommand(GetSchedulesCommand.class);
+        GetSchedulesCommandParameters parameters =  new GetSchedulesCommandParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021);
+        parameters.setStationIds(Arrays.asList("16689", "20360", "20453", "21868"));
+        cmd.setParameters(parameters);
+        executeCommand(cmd);
+    }
+
+    private Credentials connect() throws Exception {
+        Credentials credentials = createCredentials();
+        client.connect(credentials);
+        return credentials;
+    }
+
+    private void executeCommand(Command cmd) throws Exception{
+        client.execute(cmd);
+        System.out.println(cmd.getResult());
+        assert cmd.getStatus() == CommandStatus.SUCCESS;
+    }
 
     private Credentials createCredentials() throws IOException {
         ObjectMapper mapper = ModuleRegistration.getInstance().getConfiguredObjectMapper();

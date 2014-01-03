@@ -16,10 +16,12 @@
 
 package com.tikinou.schedulesdirect;
 
-import com.tikinou.schedulesdirect.commands.GetStatusCommandImpl;
-import com.tikinou.schedulesdirect.commands.RandHashCommandImpl;
+import com.tikinou.schedulesdirect.commands.*;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
+import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommand;
+import com.tikinou.schedulesdirect.core.commands.program.GetProgramsCommand;
 import com.tikinou.schedulesdirect.core.commands.randhash.RandHashCommand;
+import com.tikinou.schedulesdirect.core.commands.schedules.GetSchedulesCommand;
 import com.tikinou.schedulesdirect.core.commands.status.GetStatusCommand;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,5 +43,20 @@ public class SchedulesDirectConfig {
     @Bean
     GetStatusCommand getStatusCommand(){
         return new GetStatusCommandImpl();
+    }
+
+    @Bean
+    GetLineupsCommand getLineupsCommand(){
+        return new GetLineupsCommandImpl();
+    }
+
+    @Bean
+    GetProgramsCommand getProgramsCommand(){
+        return new GetProgramsCommandImpl();
+    }
+
+    @Bean
+    GetSchedulesCommand getSchedulesCommand(){
+        return new GetSchedulesCommandImpl();
     }
 }
