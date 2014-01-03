@@ -21,6 +21,8 @@ import com.tikinou.schedulesdirect.core.domain.Credentials;
 import com.tikinou.schedulesdirect.core.domain.SchedulesDirectApiVersion;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
  * @author Sebastien Astie
@@ -30,8 +32,9 @@ public class SchedulesDirectClientImplTest {
 
     @Before
     public void setUp() throws Exception {
-        client = new SchedulesDirectClientImpl();
-        client.setup(SchedulesDirectApiVersion.VERSION_20130709, false);
+        ApplicationContext ctxt = new AnnotationConfigApplicationContext(SchedulesDirectConfig.class);
+        client = ctxt.getBean(SchedulesDirectClient.class);
+        client.setup(SchedulesDirectApiVersion.VERSION_20131021, true);
     }
 
     @Test
