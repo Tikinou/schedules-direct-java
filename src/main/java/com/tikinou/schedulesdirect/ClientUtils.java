@@ -21,6 +21,8 @@ import com.tikinou.schedulesdirect.core.Command;
 import com.tikinou.schedulesdirect.core.CommandResult;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
 import com.tikinou.schedulesdirect.core.domain.CommandStatus;
+import com.tikinou.schedulesdirect.core.domain.Credentials;
+import com.tikinou.schedulesdirect.core.exceptions.AuthenticationException;
 import com.tikinou.schedulesdirect.core.jackson.ModuleRegistration;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -71,6 +73,11 @@ public class ClientUtils {
         } else {
             command.setStatus(CommandStatus.FAILURE);
         }
+    }
+
+    public void failIfUnauthenticated(Credentials credentials) throws AuthenticationException {
+        if (credentials.getRandhash() == null)
+            throw new AuthenticationException("Not authenticated");
     }
 
     /**

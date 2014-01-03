@@ -18,40 +18,32 @@ package com.tikinou.schedulesdirect.commands;
 
 import com.tikinou.schedulesdirect.ClientUtils;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
-import com.tikinou.schedulesdirect.core.commands.randhash.AbstractRandhashCommand;
-import com.tikinou.schedulesdirect.core.commands.randhash.RandHashCommand;
-import com.tikinou.schedulesdirect.core.commands.randhash.RandHashParameters;
-import com.tikinou.schedulesdirect.core.commands.randhash.RandHashResult;
+import com.tikinou.schedulesdirect.core.commands.status.AbstractGetStatusCommand;
+import com.tikinou.schedulesdirect.core.commands.status.GetStatusCommand;
+import com.tikinou.schedulesdirect.core.commands.status.GetStatusResult;
 import com.tikinou.schedulesdirect.core.domain.CommandStatus;
-import com.tikinou.schedulesdirect.core.domain.Credentials;
 import com.tikinou.schedulesdirect.core.exceptions.ValidationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.joda.time.DateTime;
 
 /**
- * @author Sebastien Astie
+ * @author Sebastien Astie.
  */
-public class RandHashCommandImpl extends AbstractRandhashCommand {
-    private static Log LOG = LogFactory.getLog(RandHashCommand.class);
-
+public class GetStatusCommandImpl extends AbstractGetStatusCommand {
+    private static Log LOG = LogFactory.getLog(GetStatusCommand.class);
 
     @Override
     public void execute(SchedulesDirectClient client) {
+        ClientUtils clientUtils = ClientUtils.getInstance();
         try{
+            clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            ClientUtils.getInstance().executeRequest(client,this, getParameters(), RandHashResult.class);
-           if(getStatus() == CommandStatus.SUCCESS){
-               Credentials credentials = getParameters().getCredentials();
-               credentials.setRandhash(getResult().getRandhash());
-               credentials.setRandhashDateTime(DateTime.now());
-               return;
-           }
+            ClientUtils.getInstance().executeRequest(client,this, getParameters(), GetStatusResult.class);
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);
-            RandHashResult result = new RandHashResult();
+            GetStatusResult result = new GetStatusResult();
             result.setMessage(e.getMessage());
             setResults(result);
         }
@@ -59,8 +51,5 @@ public class RandHashCommandImpl extends AbstractRandhashCommand {
 
     @Override
     public void validateParameters() throws ValidationException {
-        RandHashParameters parameters = getParameters();
-        if(parameters.getCredentials().getUsername() == null || parameters.getCredentials().getUsername().isEmpty())
-            throw new ValidationException("username must be provided");
     }
 }

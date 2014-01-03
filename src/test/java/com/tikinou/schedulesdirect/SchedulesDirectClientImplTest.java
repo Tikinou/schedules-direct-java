@@ -16,13 +16,19 @@
 
 package com.tikinou.schedulesdirect;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
 import com.tikinou.schedulesdirect.core.domain.Credentials;
 import com.tikinou.schedulesdirect.core.domain.SchedulesDirectApiVersion;
+import com.tikinou.schedulesdirect.core.exceptions.VersionNotSupportedException;
+import com.tikinou.schedulesdirect.core.jackson.ModuleRegistration;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+import java.io.IOException;
 
 /**
  * @author Sebastien Astie
@@ -39,7 +45,30 @@ public class SchedulesDirectClientImplTest {
 
     @Test
     public void testConnect() throws Exception {
-        Credentials credentials = new Credentials();
+        Credentials credentials = createCredentials();
         client.connect(credentials, true);
+    }
+
+    @Test(expected = VersionNotSupportedException.class)
+    public void testUnknownVersion() throws Exception{
+        client.setup(null, false);
+    }
+
+
+    private Credentials createCredentials() throws IOException {
+        ObjectMapper mapper = ModuleRegistration.getInstance().getConfiguredObjectMapper();
+        Credentials credentials = mapper.readValue(SchedulesDirectClientImplTest.class.getResourceAsStream("/credentials.json"), Credentials.class);
+        credentials.setClearPassword(credentials.getPassword());
+        // override from system props (can be provided from gradle.properties)
+        String userName = System.getProperty("credentials.username");
+        if (userName != null)
+            credentials.setUsername(userName);
+        String password = System.getProperty("credentials.password");
+        if (password != null)
+            credentials.setClearPassword(password);
+
+        assert credentials.getUsername() != null && !"CHANGE_USER_NAME".equals(credentials.getUsername());
+        assert credentials.getClearPassword() != null &&  !"CHANGE_PASSWORD".equals(credentials.getClearPassword());
+        return credentials;
     }
 }
