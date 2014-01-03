@@ -55,7 +55,7 @@ public class ClientUtils {
             if( messageConverter instanceof MappingJackson2HttpMessageConverter) {
                 ObjectMapper objectMapper = ModuleRegistration.getInstance().getConfiguredObjectMapper();
                 MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = (MappingJackson2HttpMessageConverter) messageConverter;
-                mappingJackson2HttpMessageConverter.setSupportedMediaTypes(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML));
+                mappingJackson2HttpMessageConverter.setSupportedMediaTypes(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM));
                 mappingJackson2HttpMessageConverter.setObjectMapper( objectMapper );
             }
         }

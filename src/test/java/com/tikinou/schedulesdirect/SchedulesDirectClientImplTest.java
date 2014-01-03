@@ -20,6 +20,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tikinou.schedulesdirect.core.Command;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
+import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsCommand;
+import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsParameters;
 import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommand;
 import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommandParameters;
 import com.tikinou.schedulesdirect.core.commands.program.GetProgramsCommand;
@@ -111,6 +113,16 @@ public class SchedulesDirectClientImplTest {
         GetSchedulesCommand cmd = client.createCommand(GetSchedulesCommand.class);
         GetSchedulesCommandParameters parameters =  new GetSchedulesCommandParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021);
         parameters.setStationIds(Arrays.asList("16689", "20360", "20453", "21868"));
+        cmd.setParameters(parameters);
+        executeCommand(cmd);
+    }
+
+    @Test
+    public void testGetSubscribedHeadends() throws Exception {
+        Credentials credentials = connect();
+        GetHeadendsCommand cmd = client.createCommand(GetHeadendsCommand.class);
+        GetHeadendsParameters parameters =  new GetHeadendsParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021);
+        parameters.setSubscribed(true);
         cmd.setParameters(parameters);
         executeCommand(cmd);
     }

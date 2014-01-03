@@ -18,7 +18,9 @@ package com.tikinou.schedulesdirect;
 
 import com.tikinou.schedulesdirect.commands.*;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
+import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsCommand;
 import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommand;
+import com.tikinou.schedulesdirect.core.commands.message.DeleteMessageCommand;
 import com.tikinou.schedulesdirect.core.commands.program.GetProgramsCommand;
 import com.tikinou.schedulesdirect.core.commands.randhash.RandHashCommand;
 import com.tikinou.schedulesdirect.core.commands.schedules.GetSchedulesCommand;
@@ -58,5 +60,15 @@ public class SchedulesDirectConfig {
     @Bean
     GetSchedulesCommand getSchedulesCommand(){
         return new GetSchedulesCommandImpl();
+    }
+
+    @Bean
+    GetHeadendsCommand getHeadendsCommand(){
+        return new GetHeadendsCommandImpl();
+    }
+
+    @Bean
+    DeleteMessageCommand deleteMessageCommand(){
+        return new DeleteMessageCommandImpl();
     }
 }
