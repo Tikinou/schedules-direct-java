@@ -59,6 +59,7 @@ public class GetHeadendsCommandImpl extends AbstractGetHeadendsCommand {
 
     @Override
     public void validateParameters() throws ValidationException {
+        assert getParameters() != null;
         if(getParameters().getSubscribed() != null && getParameters().getSubscribed()){
             // we need the subscribed head-ends
             getParameters().setCountry(Country.Worldwide);

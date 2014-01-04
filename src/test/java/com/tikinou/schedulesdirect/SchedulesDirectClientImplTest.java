@@ -20,8 +20,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tikinou.schedulesdirect.core.Command;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
-import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsCommand;
-import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsParameters;
+import com.tikinou.schedulesdirect.core.commands.headend.*;
 import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommand;
 import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommandParameters;
 import com.tikinou.schedulesdirect.core.commands.program.GetProgramsCommand;
@@ -125,6 +124,44 @@ public class SchedulesDirectClientImplTest {
         parameters.setSubscribed(true);
         cmd.setParameters(parameters);
         executeCommand(cmd);
+    }
+
+    @Test
+    public void testGetHeadends() throws Exception {
+        Credentials credentials = connect();
+        GetHeadendsCommand cmd = client.createCommand(GetHeadendsCommand.class);
+        GetHeadendsParameters parameters =  new GetHeadendsParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021);
+        parameters.setCountry(Country.UnitedStates);
+        parameters.setPostalCode("10564");
+        cmd.setParameters(parameters);
+        executeCommand(cmd);
+    }
+
+    public void testAddAndDeleteHeadends() throws Exception{
+        Credentials credentials = connect();
+        GetHeadendsCommand cmd = client.createCommand(GetHeadendsCommand.class);
+        GetHeadendsParameters parameters =  new GetHeadendsParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021);
+        parameters.setCountry(Country.UnitedStates);
+        parameters.setPostalCode("94002");
+        cmd.setParameters(parameters);
+        executeCommand(cmd);
+        System.out.println("Got Headends, try to find the first one and add it");
+        assert !cmd.getResult().getData().isEmpty();
+        Headend headend = cmd.getResult().getData().get(0);
+        AddHeadendCommand addCmd = client.createCommand(AddHeadendCommand.class);
+        AddDeleteHeadendParameters addParams = new AddDeleteHeadendParameters(credentials.getRandhash(), false, SchedulesDirectApiVersion.VERSION_20131021);
+        addParams.setHeadendId(headend.getHeadend());
+        addCmd.setParameters(addParams);
+        System.out.println("Adding headend " + headend.getHeadend());
+        executeCommand(addCmd);
+        System.out.println("Added headend " + headend.getHeadend());
+        DeleteHeadendCommand delCmd = client.createCommand(DeleteHeadendCommand.class);
+        AddDeleteHeadendParameters delParams = new AddDeleteHeadendParameters(credentials.getRandhash(), true, SchedulesDirectApiVersion.VERSION_20131021);
+        delParams.setHeadendId(headend.getHeadend());
+        delCmd.setParameters(delParams);
+        System.out.println("Deleting headend " + headend.getHeadend());
+        executeCommand(delCmd);
+        System.out.println("Deleted headend " + headend.getHeadend());
     }
 
     private Credentials connect() throws Exception {

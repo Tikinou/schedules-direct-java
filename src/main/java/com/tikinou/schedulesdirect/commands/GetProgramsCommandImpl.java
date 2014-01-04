@@ -53,6 +53,7 @@ public class GetProgramsCommandImpl extends AbstractGetProgramsCommand {
 
     @Override
     public void validateParameters() throws ValidationException {
+        assert getParameters() != null;
         if (getParameters().getProgramIds() == null || getParameters().getProgramIds().isEmpty())
             throw new ValidationException("programIds parameter is required");
     }

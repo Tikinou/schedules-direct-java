@@ -53,6 +53,7 @@ public class GetLineupsCommandImpl extends AbstractGetLineupsCommand {
 
     @Override
     public void validateParameters() throws ValidationException {
+        assert getParameters() != null;
         if (getParameters().getHeadendIds() == null || getParameters().getHeadendIds().isEmpty())
             throw new ValidationException("lineupIds parameter is required");
     }

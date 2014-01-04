@@ -51,5 +51,6 @@ public class GetStatusCommandImpl extends AbstractGetStatusCommand {
 
     @Override
     public void validateParameters() throws ValidationException {
+        assert getParameters() != null;
     }
 }

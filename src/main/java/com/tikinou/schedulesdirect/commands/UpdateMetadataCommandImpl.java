@@ -52,6 +52,18 @@ public class UpdateMetadataCommandImpl extends AbstractUpdateMetadataCommand {
 
     @Override
     public void validateParameters() throws ValidationException {
-
+        assert getParameters() != null;
+        if (getParameters().getSource() == null)
+            throw new ValidationException("source parameter is required");
+        if (getParameters().getComment() == null)
+            throw new ValidationException("comment parameter is required");
+        if (getParameters().getSuggested() == null)
+            throw new ValidationException("suggested parameter is required");
+        if (getParameters().getCurrent() == null)
+            throw new ValidationException("current series id parameter is required");
+        if (getParameters().getProgramId() == null)
+            throw new ValidationException("programId parameter is required");
+        if (getParameters().getField() == null)
+            throw new ValidationException("field parameter is required");
     }
 }

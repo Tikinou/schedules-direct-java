@@ -18,6 +18,8 @@ package com.tikinou.schedulesdirect;
 
 import com.tikinou.schedulesdirect.commands.*;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
+import com.tikinou.schedulesdirect.core.commands.headend.AddHeadendCommand;
+import com.tikinou.schedulesdirect.core.commands.headend.DeleteHeadendCommand;
 import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsCommand;
 import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommand;
 import com.tikinou.schedulesdirect.core.commands.message.DeleteMessageCommand;
@@ -65,6 +67,16 @@ public class SchedulesDirectConfig {
     @Bean
     GetHeadendsCommand getHeadendsCommand(){
         return new GetHeadendsCommandImpl();
+    }
+
+    @Bean
+    AddHeadendCommand addHeadendCommand(){
+        return new AddHeadendCommandImpl();
+    }
+
+    @Bean
+    DeleteHeadendCommand deleteHeadendCommand(){
+        return new DeleteHeadendCommandImpl();
     }
 
     @Bean
