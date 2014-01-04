@@ -47,7 +47,7 @@ public class GetHeadendsCommandImpl extends AbstractGetHeadendsCommand {
             clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            ClientUtils.getInstance().executeRequest(client,this, getParameters(), GetHeadendsResult.class);
+            ClientUtils.getInstance().executeRequest(client,this, GetHeadendsResult.class);
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);

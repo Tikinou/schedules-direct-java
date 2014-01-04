@@ -41,7 +41,7 @@ public class RandHashCommandImpl extends AbstractRandhashCommand {
         try{
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            ClientUtils.getInstance().executeRequest(client,this, getParameters(), RandHashResult.class);
+            ClientUtils.getInstance().executeRequest(client,this, RandHashResult.class);
            if(getStatus() == CommandStatus.SUCCESS){
                Credentials credentials = getParameters().getCredentials();
                credentials.setRandhash(getResult().getRandhash());

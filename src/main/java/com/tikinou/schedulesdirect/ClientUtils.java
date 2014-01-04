@@ -61,9 +61,9 @@ public class ClientUtils {
         }
     }
 
-    public <R_IMPL extends R, P, R extends CommandResult, C extends Command<P,R>> void executeRequest(SchedulesDirectClient client, C command, P parameters, Class<R_IMPL> resultType){
+    public <R_IMPL extends R, P, R extends CommandResult, C extends Command<P,R>> void executeRequest(SchedulesDirectClient client, C command, Class<R_IMPL> resultType){
         MultiValueMap<String,P> valueMap = new LinkedMultiValueMap<>();
-        valueMap.add("request", parameters);
+        valueMap.add("request", command.getParameters());
         HttpEntity<?> entity = getRequestEntity(valueMap);
         ResponseEntity<R_IMPL> res = restTemplate.postForEntity(client.getUrl(), entity, resultType);
         if(res.getStatusCode() == HttpStatus.OK){

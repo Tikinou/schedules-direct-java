@@ -37,7 +37,7 @@ public class DeleteHeadendCommandImpl extends AbstractDeleteHeadendCommand {
             clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            ClientUtils.getInstance().executeRequest(client,this, getParameters(), AddDeleteHeadendResult.class);
+            ClientUtils.getInstance().executeRequest(client,this, AddDeleteHeadendResult.class);
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);

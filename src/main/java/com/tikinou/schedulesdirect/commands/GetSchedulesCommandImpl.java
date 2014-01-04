@@ -40,7 +40,7 @@ public class GetSchedulesCommandImpl extends AbstractGetSchedulesCommand {
             clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            ClientUtils.getInstance().executeRequest(client,this, getParameters(), BaseFileUrlBasedCommandResult.class);
+            ClientUtils.getInstance().executeRequest(client,this, BaseFileUrlBasedCommandResult.class);
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);
