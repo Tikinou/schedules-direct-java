@@ -40,7 +40,7 @@ public class UpdateMetadataCommandImpl extends AbstractUpdateMetadataCommand {
             clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            ClientUtils.getInstance().executeRequest(client,this, CommandResult.class);
+            ClientUtils.getInstance().executeRequest(client,this, BaseCommandResult.class);
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);

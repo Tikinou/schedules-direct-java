@@ -146,8 +146,8 @@ public class SchedulesDirectClientImplTest {
         cmd.setParameters(parameters);
         executeCommand(cmd);
         System.out.println("Got Headends, try to find the first one and add it");
-        assert !cmd.getResult().getData().isEmpty();
-        Headend headend = cmd.getResult().getData().get(0);
+        assert !cmd.getResults().getData().isEmpty();
+        Headend headend = cmd.getResults().getData().get(0);
         AddHeadendCommand addCmd = client.createCommand(AddHeadendCommand.class);
         AddDeleteHeadendParameters addParams = new AddDeleteHeadendParameters(credentials.getRandhash(), false, SchedulesDirectApiVersion.VERSION_20131021);
         addParams.setHeadendId(headend.getHeadend());
@@ -172,7 +172,7 @@ public class SchedulesDirectClientImplTest {
 
     private void executeCommand(Command cmd) throws Exception{
         client.execute(cmd);
-        System.out.println(cmd.getResult());
+        System.out.println(cmd.getResults());
         assert cmd.getStatus() == CommandStatus.SUCCESS;
     }
 

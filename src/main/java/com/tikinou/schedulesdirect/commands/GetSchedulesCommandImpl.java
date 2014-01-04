@@ -54,6 +54,6 @@ public class GetSchedulesCommandImpl extends AbstractGetSchedulesCommand {
     public void validateParameters() throws ValidationException {
         assert getParameters() != null;
         if (getParameters().getStationIds() == null || getParameters().getStationIds().isEmpty())
-            throw new ValidationException("scheduleIds parameter is required");
+            throw new ValidationException("stationIds parameter is required");
     }
 }
