@@ -82,7 +82,7 @@ public class SchedulesDirectClientImplTest {
     public void testStatus() throws Exception {
         Credentials credentials = connect();
         GetStatusCommand cmd = client.createCommand(GetStatusCommand.class);
-        cmd.setParameters(new GetStatusCommandParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021));
+        cmd.setParameters(new GetStatusCommandParameters());
         executeCommand(cmd);
     }
 
@@ -90,9 +90,7 @@ public class SchedulesDirectClientImplTest {
     public void testLineups() throws Exception {
         Credentials credentials = connect();
         GetLineupsCommand cmd = client.createCommand(GetLineupsCommand.class);
-        GetLineupsCommandParameters parameters =  new GetLineupsCommandParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021);
-        parameters.setHeadendIds(Arrays.asList("NY67791"));
-        cmd.setParameters(parameters);
+        cmd.setParameters(new GetLineupsCommandParameters(Arrays.asList("NY67791")));
         executeCommand(cmd);
     }
 
@@ -100,9 +98,7 @@ public class SchedulesDirectClientImplTest {
     public void testPrograms() throws Exception {
         Credentials credentials = connect();
         GetProgramsCommand cmd = client.createCommand(GetProgramsCommand.class);
-        GetProgramsCommandParameters parameters =  new GetProgramsCommandParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021);
-        parameters.setProgramIds(Arrays.asList("EP017398160007", "SH013762600000", "MV003954050000"));
-        cmd.setParameters(parameters);
+        cmd.setParameters(new GetProgramsCommandParameters(Arrays.asList("EP017398160007", "SH013762600000", "MV003954050000")));
         executeCommand(cmd);
     }
 
@@ -110,9 +106,7 @@ public class SchedulesDirectClientImplTest {
     public void testSchedules() throws Exception {
         Credentials credentials = connect();
         GetSchedulesCommand cmd = client.createCommand(GetSchedulesCommand.class);
-        GetSchedulesCommandParameters parameters =  new GetSchedulesCommandParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021);
-        parameters.setStationIds(Arrays.asList("16689", "20360", "20453", "21868"));
-        cmd.setParameters(parameters);
+        cmd.setParameters(new GetSchedulesCommandParameters(Arrays.asList("16689", "20360", "20453", "21868")));
         executeCommand(cmd);
     }
 
@@ -120,7 +114,7 @@ public class SchedulesDirectClientImplTest {
     public void testGetSubscribedHeadends() throws Exception {
         Credentials credentials = connect();
         GetHeadendsCommand cmd = client.createCommand(GetHeadendsCommand.class);
-        GetHeadendsParameters parameters =  new GetHeadendsParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021);
+        GetHeadendsParameters parameters =  new GetHeadendsParameters();
         parameters.setSubscribed(true);
         cmd.setParameters(parameters);
         executeCommand(cmd);
@@ -130,7 +124,7 @@ public class SchedulesDirectClientImplTest {
     public void testGetHeadends() throws Exception {
         Credentials credentials = connect();
         GetHeadendsCommand cmd = client.createCommand(GetHeadendsCommand.class);
-        GetHeadendsParameters parameters =  new GetHeadendsParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021);
+        GetHeadendsParameters parameters =  new GetHeadendsParameters();
         parameters.setCountry(Country.UnitedStates);
         parameters.setPostalCode("10564");
         cmd.setParameters(parameters);
@@ -140,7 +134,7 @@ public class SchedulesDirectClientImplTest {
     public void testAddAndDeleteHeadends() throws Exception{
         Credentials credentials = connect();
         GetHeadendsCommand cmd = client.createCommand(GetHeadendsCommand.class);
-        GetHeadendsParameters parameters =  new GetHeadendsParameters(credentials.getRandhash(), SchedulesDirectApiVersion.VERSION_20131021);
+        GetHeadendsParameters parameters =  new GetHeadendsParameters();
         parameters.setCountry(Country.UnitedStates);
         parameters.setPostalCode("94002");
         cmd.setParameters(parameters);
@@ -149,16 +143,12 @@ public class SchedulesDirectClientImplTest {
         assert !cmd.getResults().getData().isEmpty();
         Headend headend = cmd.getResults().getData().get(0);
         AddHeadendCommand addCmd = client.createCommand(AddHeadendCommand.class);
-        AddDeleteHeadendParameters addParams = new AddDeleteHeadendParameters(credentials.getRandhash(), false, SchedulesDirectApiVersion.VERSION_20131021);
-        addParams.setHeadendId(headend.getHeadend());
-        addCmd.setParameters(addParams);
+        addCmd.setParameters(new AddDeleteHeadendParameters(false, headend.getHeadend()));
         System.out.println("Adding headend " + headend.getHeadend());
         executeCommand(addCmd);
         System.out.println("Added headend " + headend.getHeadend());
         DeleteHeadendCommand delCmd = client.createCommand(DeleteHeadendCommand.class);
-        AddDeleteHeadendParameters delParams = new AddDeleteHeadendParameters(credentials.getRandhash(), true, SchedulesDirectApiVersion.VERSION_20131021);
-        delParams.setHeadendId(headend.getHeadend());
-        delCmd.setParameters(delParams);
+        delCmd.setParameters(new AddDeleteHeadendParameters(true, headend.getHeadend()));
         System.out.println("Deleting headend " + headend.getHeadend());
         executeCommand(delCmd);
         System.out.println("Deleted headend " + headend.getHeadend());
