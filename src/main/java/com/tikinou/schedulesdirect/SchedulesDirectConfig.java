@@ -18,15 +18,15 @@ package com.tikinou.schedulesdirect;
 
 import com.tikinou.schedulesdirect.commands.*;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
-import com.tikinou.schedulesdirect.core.commands.headend.AddHeadendCommand;
-import com.tikinou.schedulesdirect.core.commands.headend.DeleteHeadendCommand;
 import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsCommand;
-import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommand;
+import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupDetailsCommand;
+import com.tikinou.schedulesdirect.core.commands.lineup.GetSubscribedLineupsCommand;
+import com.tikinou.schedulesdirect.core.commands.lineup.LineupManagementCommand;
 import com.tikinou.schedulesdirect.core.commands.message.DeleteMessageCommand;
 import com.tikinou.schedulesdirect.core.commands.program.GetProgramsCommand;
-import com.tikinou.schedulesdirect.core.commands.randhash.RandHashCommand;
 import com.tikinou.schedulesdirect.core.commands.schedules.GetSchedulesCommand;
 import com.tikinou.schedulesdirect.core.commands.status.GetStatusCommand;
+import com.tikinou.schedulesdirect.core.commands.token.TokenCommand;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -40,8 +40,9 @@ public class SchedulesDirectConfig {
         return new SchedulesDirectClientImpl();
     }
 
-    @Bean RandHashCommand randHashCommand(){
-        return new RandHashCommandImpl();
+    @Bean
+    TokenCommand tokenCommand(){
+        return new TokenCommandImpl();
     }
 
     @Bean
@@ -50,9 +51,10 @@ public class SchedulesDirectConfig {
     }
 
     @Bean
-    GetLineupsCommand getLineupsCommand(){
-        return new GetLineupsCommandImpl();
-    }
+    GetLineupDetailsCommand getLineupDetailsCommand(){ return new GetLineupDetailsCommandImpl(); }
+
+    @Bean
+    GetSubscribedLineupsCommand getSubscribedLineupsCommand(){ return new GetSubscribedLineupsCommandImpl(); }
 
     @Bean
     GetProgramsCommand getProgramsCommand(){
@@ -70,14 +72,10 @@ public class SchedulesDirectConfig {
     }
 
     @Bean
-    AddHeadendCommand addHeadendCommand(){
-        return new AddHeadendCommandImpl();
-    }
+    LineupManagementCommand addLineupCommand(){ return new AddLineupCommandImpl(); }
 
     @Bean
-    DeleteHeadendCommand deleteHeadendCommand(){
-        return new DeleteHeadendCommandImpl();
-    }
+    LineupManagementCommand deleteLineupCommand(){ return new DeleteLineupCommandImpl(); }
 
     @Bean
     DeleteMessageCommand deleteMessageCommand(){

@@ -18,12 +18,8 @@ package com.tikinou.schedulesdirect.commands;
 
 import com.tikinou.schedulesdirect.ClientUtils;
 import com.tikinou.schedulesdirect.core.CommandResult;
-import com.tikinou.schedulesdirect.core.FileUrlBasedCommandResult;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
 import com.tikinou.schedulesdirect.core.commands.BaseCommandResult;
-import com.tikinou.schedulesdirect.core.commands.BaseFileUrlBasedCommandResult;
-import com.tikinou.schedulesdirect.core.commands.lineup.AbstractGetLineupsCommand;
-import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommand;
 import com.tikinou.schedulesdirect.core.commands.message.AbstractDeleteMessageCommand;
 import com.tikinou.schedulesdirect.core.commands.message.DeleteMessageCommand;
 import com.tikinou.schedulesdirect.core.domain.CommandStatus;
@@ -43,12 +39,11 @@ public class DeleteMessageCommandImpl extends AbstractDeleteMessageCommand {
             clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            ClientUtils.getInstance().executeRequest(client,this, BaseCommandResult.class);
+            clientUtils.executeRequest(client, this, BaseCommandResult.class);
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);
-            CommandResult result = new BaseCommandResult();
-            result.setMessage(e.getMessage());
+            BaseCommandResult result = clientUtils.handleError(e, BaseCommandResult.class, new BaseCommandResult());
             setResults(result);
         }
     }

@@ -16,18 +16,24 @@
 
 package com.tikinou.schedulesdirect.commands;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tikinou.schedulesdirect.ClientUtils;
-import com.tikinou.schedulesdirect.core.FileUrlBasedCommandResult;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
-import com.tikinou.schedulesdirect.core.commands.BaseFileUrlBasedCommandResult;
-import com.tikinou.schedulesdirect.core.commands.lineup.AbstractGetLineupsCommand;
-import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommand;
+import com.tikinou.schedulesdirect.core.commands.BaseCommandResult;
 import com.tikinou.schedulesdirect.core.commands.program.AbstractGetProgramsCommand;
 import com.tikinou.schedulesdirect.core.commands.program.GetProgramsCommand;
+import com.tikinou.schedulesdirect.core.commands.program.GetProgramsCommandResult;
 import com.tikinou.schedulesdirect.core.domain.CommandStatus;
+import com.tikinou.schedulesdirect.core.domain.program.ProgramSD;
 import com.tikinou.schedulesdirect.core.exceptions.ValidationException;
+import com.tikinou.schedulesdirect.core.jackson.ModuleRegistration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.io.BufferedReader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Sebastien Astie
@@ -41,12 +47,29 @@ public class GetProgramsCommandImpl extends AbstractGetProgramsCommand {
             clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            ClientUtils.getInstance().executeRequest(client,this, BaseFileUrlBasedCommandResult.class);
+            String res = clientUtils.executeRequest(client,this, GetProgramsCommandResult.class, String.class);
+            if(res == null)
+                return;
+            List<ProgramSD> list = new ArrayList<>();
+            ObjectMapper mapper = ModuleRegistration.getInstance().getConfiguredObjectMapper();
+            try (BufferedReader reader = new BufferedReader(new StringReader(res))){
+                String line = reader.readLine();
+                while(line != null){
+                    ProgramSD val = mapper.readValue(line, ProgramSD.class);
+                    if(val != null)
+                        list.add(val);
+                    line = reader.readLine();
+                }
+            }
+            if(!list.isEmpty()) {
+                GetProgramsCommandResult result = new GetProgramsCommandResult();
+                result.setPrograms(list);
+                setResults(result);
+            }
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);
-            FileUrlBasedCommandResult result = new BaseFileUrlBasedCommandResult();
-            result.setMessage(e.getMessage());
+            GetProgramsCommandResult result = clientUtils.handleError(e, GetProgramsCommandResult.class, new GetProgramsCommandResult());
             setResults(result);
         }
     }

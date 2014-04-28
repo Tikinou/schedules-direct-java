@@ -18,11 +18,9 @@ package com.tikinou.schedulesdirect.commands;
 
 import com.tikinou.schedulesdirect.ClientUtils;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
-import com.tikinou.schedulesdirect.core.commands.headend.*;
+import com.tikinou.schedulesdirect.core.commands.lineup.AbstractGetSubscribedLineupsCommand;
+import com.tikinou.schedulesdirect.core.commands.lineup.GetSubscribedLineupsResult;
 import com.tikinou.schedulesdirect.core.domain.CommandStatus;
-import com.tikinou.schedulesdirect.core.domain.Country;
-import com.tikinou.schedulesdirect.core.domain.postalcode.DefaultPostalCodeFormatter;
-import com.tikinou.schedulesdirect.core.domain.postalcode.PostalCodeFormatter;
 import com.tikinou.schedulesdirect.core.exceptions.ValidationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,9 +28,8 @@ import org.apache.commons.logging.LogFactory;
 /**
  * @author Sebastien Astie
  */
-public class AddHeadendCommandImpl extends AbstractAddHeadendCommand {
-    private static Log LOG = LogFactory.getLog(AddHeadendCommand.class);
-
+public class GetSubscribedLineupsCommandImpl extends AbstractGetSubscribedLineupsCommand{
+    private static Log LOG = LogFactory.getLog(GetSubscribedLineupsCommandImpl.class);
     @Override
     public void execute(SchedulesDirectClient client) {
         ClientUtils clientUtils = ClientUtils.getInstance();
@@ -40,21 +37,16 @@ public class AddHeadendCommandImpl extends AbstractAddHeadendCommand {
             clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            ClientUtils.getInstance().executeRequest(client,this, AddDeleteHeadendResult.class);
+            clientUtils.executeRequest(client,this, GetSubscribedLineupsResult.class);
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);
-            AddDeleteHeadendResult result = new AddDeleteHeadendResult();
-            result.setMessage(e.getMessage());
+            GetSubscribedLineupsResult result = clientUtils.handleError(e, GetSubscribedLineupsResult.class, new GetSubscribedLineupsResult());
             setResults(result);
         }
     }
 
     @Override
     public void validateParameters() throws ValidationException {
-        assert getParameters() != null;
-        if(getParameters().getHeadendId() == null || getParameters().getHeadendId().isEmpty()){
-            throw new ValidationException("headendId parameter is required");
-        }
     }
 }

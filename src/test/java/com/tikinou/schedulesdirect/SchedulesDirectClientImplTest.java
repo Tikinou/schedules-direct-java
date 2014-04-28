@@ -16,13 +16,12 @@
 
 package com.tikinou.schedulesdirect;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tikinou.schedulesdirect.core.Command;
+import com.tikinou.schedulesdirect.core.ParameterizedCommand;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
-import com.tikinou.schedulesdirect.core.commands.headend.*;
-import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommand;
-import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommandParameters;
+import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsCommand;
+import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsParameters;
+import com.tikinou.schedulesdirect.core.commands.lineup.*;
 import com.tikinou.schedulesdirect.core.commands.program.GetProgramsCommand;
 import com.tikinou.schedulesdirect.core.commands.program.GetProgramsCommandParameters;
 import com.tikinou.schedulesdirect.core.commands.schedules.GetSchedulesCommand;
@@ -38,7 +37,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -57,18 +55,18 @@ public class SchedulesDirectClientImplTest {
     @Test
     public void testConnect() throws Exception {
         Credentials credentials = createCredentials();
-        assert credentials.getRandhash() == null;
+        assert credentials.getToken() == null;
         client.connect(credentials);
-        assert credentials.getRandhash() != null;
+        assert credentials.getToken() != null;
         System.out.println("TestConnect success: credentials now: " + credentials);
     }
 
     @Test
     public void testMultipleConnect() throws Exception {
         Credentials credentials = createCredentials();
-        assert credentials.getRandhash() == null;
+        assert credentials.getToken() == null;
         client.connect(credentials);
-        assert credentials.getRandhash() != null;
+        assert credentials.getToken() != null;
         client.connect(credentials);
     }
 
@@ -89,8 +87,8 @@ public class SchedulesDirectClientImplTest {
     @Test
     public void testLineups() throws Exception {
         Credentials credentials = connect();
-        GetLineupsCommand cmd = client.createCommand(GetLineupsCommand.class);
-        cmd.setParameters(new GetLineupsCommandParameters(Arrays.asList("NY67791")));
+        GetLineupDetailsCommand cmd = client.createCommand(GetLineupDetailsCommand.class);
+        cmd.setParameters(new LineupCommandParameters("USA-NY67791-X"));
         executeCommand(cmd);
     }
 
@@ -98,7 +96,8 @@ public class SchedulesDirectClientImplTest {
     public void testPrograms() throws Exception {
         Credentials credentials = connect();
         GetProgramsCommand cmd = client.createCommand(GetProgramsCommand.class);
-        cmd.setParameters(new GetProgramsCommandParameters(Arrays.asList("EP017398160007", "SH013762600000", "MV003954050000")));
+//        cmd.setParameters(new GetProgramsCommandParameters(Arrays.asList("EP017398160007", "SH013762600000", "MV003954050000")));
+        cmd.setParameters(new GetProgramsCommandParameters(Arrays.asList("MV003954050000")));
         executeCommand(cmd);
     }
 
@@ -111,12 +110,10 @@ public class SchedulesDirectClientImplTest {
     }
 
     @Test
-    public void testGetSubscribedHeadends() throws Exception {
+    public void testGetSubscribedLineups() throws Exception {
         Credentials credentials = connect();
-        GetHeadendsCommand cmd = client.createCommand(GetHeadendsCommand.class);
-        GetHeadendsParameters parameters =  new GetHeadendsParameters();
-        parameters.setSubscribed(true);
-        cmd.setParameters(parameters);
+        GetSubscribedLineupsCommand cmd = client.createCommand(GetSubscribedLineupsCommand.class);
+        cmd.setParameters(new GetSubscribedLineupsCommandParameters());
         executeCommand(cmd);
     }
 
@@ -124,14 +121,14 @@ public class SchedulesDirectClientImplTest {
     public void testGetHeadends() throws Exception {
         Credentials credentials = connect();
         GetHeadendsCommand cmd = client.createCommand(GetHeadendsCommand.class);
-        GetHeadendsParameters parameters =  new GetHeadendsParameters();
+        GetHeadendsParameters parameters =  new GetHeadendsParameters(null);
         parameters.setCountry(Country.UnitedStates);
-        parameters.setPostalCode("10564");
+        parameters.setPostalCode("10562");
         cmd.setParameters(parameters);
         executeCommand(cmd);
     }
 
-    public void testAddAndDeleteHeadends() throws Exception{
+    public void testAddAndDeleteLineups() throws Exception{
         Credentials credentials = connect();
         GetHeadendsCommand cmd = client.createCommand(GetHeadendsCommand.class);
         GetHeadendsParameters parameters =  new GetHeadendsParameters();
@@ -140,18 +137,21 @@ public class SchedulesDirectClientImplTest {
         cmd.setParameters(parameters);
         executeCommand(cmd);
         System.out.println("Got Headends, try to find the first one and add it");
-        assert !cmd.getResults().getData().isEmpty();
-        Headend headend = cmd.getResults().getData().get(0);
-        AddHeadendCommand addCmd = client.createCommand(AddHeadendCommand.class);
-        addCmd.setParameters(new AddDeleteHeadendParameters(false, headend.getHeadend()));
-        System.out.println("Adding headend " + headend.getHeadend());
-        executeCommand(addCmd);
-        System.out.println("Added headend " + headend.getHeadend());
-        DeleteHeadendCommand delCmd = client.createCommand(DeleteHeadendCommand.class);
-        delCmd.setParameters(new AddDeleteHeadendParameters(true, headend.getHeadend()));
-        System.out.println("Deleting headend " + headend.getHeadend());
-        executeCommand(delCmd);
-        System.out.println("Deleted headend " + headend.getHeadend());
+        assert !cmd.getResults().getHeadends().isEmpty();
+        Headend headend = cmd.getResults().getHeadends().values().iterator().next();
+        LineupManagementCommand mcmd = client.createCommand(AbstractAddLineupCommand.class);
+        String uri = headend.getLineups().get(0).getUri();
+        String id = uri.substring(uri.lastIndexOf("/") +1);
+        LineupCommandParameters p = new LineupCommandParameters(id);
+        mcmd.setParameters(p);
+        System.out.println("Adding lineup " + p.getLineupId());
+        executeCommand(mcmd);
+        System.out.println("Added lineup " + p.getLineupId());
+        mcmd = client.createCommand(AbstractDeleteLineupCommand.class);
+        mcmd.setParameters(p);
+        System.out.println("Deleting lineup " + p.getLineupId());
+        executeCommand(mcmd);
+        System.out.println("Deleted lineup " + p.getLineupId());
     }
 
     private Credentials connect() throws Exception {
@@ -160,7 +160,7 @@ public class SchedulesDirectClientImplTest {
         return credentials;
     }
 
-    private void executeCommand(Command cmd) throws Exception{
+    private void executeCommand(ParameterizedCommand cmd) throws Exception{
         client.execute(cmd);
         System.out.println(cmd.getResults());
         assert cmd.getStatus() == CommandStatus.SUCCESS;

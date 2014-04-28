@@ -17,23 +17,24 @@
 package com.tikinou.schedulesdirect.commands;
 
 import com.tikinou.schedulesdirect.ClientUtils;
-import com.tikinou.schedulesdirect.core.FileUrlBasedCommandResult;
+import com.tikinou.schedulesdirect.core.commands.lineup.AbstractAddLineupCommand;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
-import com.tikinou.schedulesdirect.core.commands.BaseFileUrlBasedCommandResult;
-import com.tikinou.schedulesdirect.core.commands.lineup.AbstractGetLineupsCommand;
-import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommand;
-import com.tikinou.schedulesdirect.core.commands.schedules.AbstractGetSchedulesCommand;
-import com.tikinou.schedulesdirect.core.commands.schedules.GetSchedulesCommand;
+import com.tikinou.schedulesdirect.core.commands.lineup.LineupCommandResult;
 import com.tikinou.schedulesdirect.core.domain.CommandStatus;
 import com.tikinou.schedulesdirect.core.exceptions.ValidationException;
+import com.tikinou.schedulesdirect.core.jackson.ModuleRegistration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.web.client.HttpClientErrorException;
+
+import java.io.IOException;
 
 /**
  * @author Sebastien Astie
  */
-public class GetLineupsCommandImpl extends AbstractGetLineupsCommand {
-    private static Log LOG = LogFactory.getLog(GetLineupsCommand.class);
+public class AddLineupCommandImpl extends AbstractAddLineupCommand {
+    private static Log LOG = LogFactory.getLog(AddLineupCommandImpl.class);
+
     @Override
     public void execute(SchedulesDirectClient client) {
         ClientUtils clientUtils = ClientUtils.getInstance();
@@ -41,12 +42,11 @@ public class GetLineupsCommandImpl extends AbstractGetLineupsCommand {
             clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            ClientUtils.getInstance().executeRequest(client,this, BaseFileUrlBasedCommandResult.class);
+            clientUtils.executeRequest(client, this, LineupCommandResult.class);
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);
-            FileUrlBasedCommandResult result = new BaseFileUrlBasedCommandResult();
-            result.setMessage(e.getMessage());
+            LineupCommandResult result = clientUtils.handleError(e, LineupCommandResult.class, new LineupCommandResult());
             setResults(result);
         }
     }
@@ -54,7 +54,8 @@ public class GetLineupsCommandImpl extends AbstractGetLineupsCommand {
     @Override
     public void validateParameters() throws ValidationException {
         assert getParameters() != null;
-        if (getParameters().getHeadendIds() == null || getParameters().getHeadendIds().isEmpty())
-            throw new ValidationException("headendIds parameter is required");
+        if(getParameters().getLineupId() == null || getParameters().getLineupId().isEmpty()){
+            throw new ValidationException("lineupId parameter is required");
+        }
     }
 }

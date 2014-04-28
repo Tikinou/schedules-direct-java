@@ -39,12 +39,11 @@ public class GetStatusCommandImpl extends AbstractGetStatusCommand {
             clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            ClientUtils.getInstance().executeRequest(client,this, GetStatusResult.class);
+            clientUtils.executeRequest(client,this, GetStatusResult.class);
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);
-            GetStatusResult result = new GetStatusResult();
-            result.setMessage(e.getMessage());
+            GetStatusResult result = clientUtils.handleError(e, GetStatusResult.class, new GetStatusResult());
             setResults(result);
         }
     }

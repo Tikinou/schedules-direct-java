@@ -17,14 +17,10 @@
 package com.tikinou.schedulesdirect.commands;
 
 import com.tikinou.schedulesdirect.ClientUtils;
-import com.tikinou.schedulesdirect.core.FileUrlBasedCommandResult;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
-import com.tikinou.schedulesdirect.core.commands.BaseFileUrlBasedCommandResult;
 import com.tikinou.schedulesdirect.core.commands.headend.AbstractGetHeadendsCommand;
 import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsCommand;
 import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsResult;
-import com.tikinou.schedulesdirect.core.commands.lineup.AbstractGetLineupsCommand;
-import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupsCommand;
 import com.tikinou.schedulesdirect.core.domain.CommandStatus;
 import com.tikinou.schedulesdirect.core.domain.Country;
 import com.tikinou.schedulesdirect.core.domain.postalcode.DefaultPostalCodeFormatter;
@@ -47,12 +43,11 @@ public class GetHeadendsCommandImpl extends AbstractGetHeadendsCommand {
             clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            ClientUtils.getInstance().executeRequest(client,this, GetHeadendsResult.class);
+            clientUtils.executeRequest(client,this, GetHeadendsResult.class);
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);
-            GetHeadendsResult result = new GetHeadendsResult();
-            result.setMessage(e.getMessage());
+            GetHeadendsResult result = clientUtils.handleError(e, GetHeadendsResult.class, new GetHeadendsResult());
             setResults(result);
         }
     }
@@ -60,16 +55,10 @@ public class GetHeadendsCommandImpl extends AbstractGetHeadendsCommand {
     @Override
     public void validateParameters() throws ValidationException {
         assert getParameters() != null;
-        if(getParameters().getSubscribed() != null && getParameters().getSubscribed()){
-            // we need the subscribed head-ends
-            getParameters().setCountry(Country.Worldwide);
-            getParameters().setPostalCode(AbstractGetHeadendsCommand.SUBSCRIBED);
-        } else {
-            if(getParameters().getCountry() == null)
-                throw new ValidationException("country parameter is required");
-            if(getParameters().getPostalCode() == null)
-                throw new ValidationException("postalCode parameter is required");
-        }
+        if(getParameters().getCountry() == null)
+            throw new ValidationException("country parameter is required");
+        if(getParameters().getPostalCode() == null)
+            throw new ValidationException("postalCode parameter is required");
         getParameters().setPostalCode(POSTAL_CODE_FORMATTER.format(getParameters().getCountry(), getParameters().getPostalCode()));
     }
 }
