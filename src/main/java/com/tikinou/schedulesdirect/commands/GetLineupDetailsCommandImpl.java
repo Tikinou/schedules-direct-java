@@ -50,5 +50,9 @@ public class GetLineupDetailsCommandImpl extends AbstractGetLineupDetailsCommand
 
     @Override
     public void validateParameters() throws ValidationException {
+        assert getParameters() != null;
+        if(getParameters().getLineupId() == null || getParameters().getLineupId().isEmpty()){
+            throw new ValidationException("lineupId parameter is required");
+        }
     }
 }
