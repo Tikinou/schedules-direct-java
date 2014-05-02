@@ -52,14 +52,18 @@ public class GetProgramsCommandImpl extends AbstractGetProgramsCommand {
                 return;
             List<ProgramSD> list = new ArrayList<>();
             ObjectMapper mapper = ModuleRegistration.getInstance().getConfiguredObjectMapper();
+            String line = null;
             try (BufferedReader reader = new BufferedReader(new StringReader(res))){
-                String line = reader.readLine();
+                line = reader.readLine();
                 while(line != null){
                     ProgramSD val = mapper.readValue(line, ProgramSD.class);
                     if(val != null)
                         list.add(val);
                     line = reader.readLine();
                 }
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+                System.out.println(line);
             }
             if(!list.isEmpty()) {
                 GetProgramsCommandResult result = new GetProgramsCommandResult();

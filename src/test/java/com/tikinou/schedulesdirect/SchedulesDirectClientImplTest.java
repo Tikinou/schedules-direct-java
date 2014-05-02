@@ -90,6 +90,8 @@ public class SchedulesDirectClientImplTest {
         GetLineupDetailsCommand cmd = client.createCommand(GetLineupDetailsCommand.class);
         cmd.setParameters(new LineupCommandParameters("USA-NY67791-X"));
         executeCommand(cmd);
+        GetLineupDetailsResult result = cmd.getResults();
+        assert result != null;
     }
 
     @Test
