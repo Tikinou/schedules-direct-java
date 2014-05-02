@@ -32,6 +32,14 @@ import org.apache.commons.logging.LogFactory;
  */
 public class GetLineupDetailsCommandImpl extends AbstractGetLineupDetailsCommand {
     private static Log LOG = LogFactory.getLog(GetLineupDetailsCommandImpl.class);
+
+    @Override
+    public String getEndPoint() {
+        StringBuilder b = new StringBuilder(super.getEndPoint());
+        b.append("/").append(getParameters().getLineupId());
+        return b.toString();
+    }
+
     @Override
     public void execute(SchedulesDirectClient client) {
         ClientUtils clientUtils = ClientUtils.getInstance();
@@ -39,7 +47,7 @@ public class GetLineupDetailsCommandImpl extends AbstractGetLineupDetailsCommand
             clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            ClientUtils.getInstance().executeRequest(client,this, GetLineupDetailsResult.class);
+            clientUtils.executeRequest(client, this, GetLineupDetailsResult.class);
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);
