@@ -19,6 +19,7 @@ package com.tikinou.schedulesdirect;
 import com.tikinou.schedulesdirect.commands.*;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
 import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsCommand;
+import com.tikinou.schedulesdirect.core.commands.image.GetImageCommand;
 import com.tikinou.schedulesdirect.core.commands.lineup.GetLineupDetailsCommand;
 import com.tikinou.schedulesdirect.core.commands.lineup.GetSubscribedLineupsCommand;
 import com.tikinou.schedulesdirect.core.commands.lineup.LineupManagementCommand;
@@ -81,4 +82,7 @@ public class SchedulesDirectConfig {
     DeleteMessageCommand deleteMessageCommand(){
         return new DeleteMessageCommandImpl();
     }
+
+    @Bean
+    GetImageCommand imageCommand() { return new GetImageCommandImpl();}
 }

@@ -107,7 +107,7 @@ public class ClientUtils {
         }
 
         if(resulTypetOverride == null){
-            ResponseEntity<R_IMPL> res = restTemplate.exchange(url.toString(), httpMethod, getRequestEntity(command.getParameters(), token), resultType);
+            ResponseEntity<R_IMPL> res = restTemplate.exchange(url.toString(), httpMethod, getRequestEntity(client.getUserAgent(), command.getParameters(), token), resultType);
             if(res.getStatusCode() == HttpStatus.OK){
                 R result = res.getBody();
                 command.setResults(result);
@@ -116,7 +116,7 @@ public class ClientUtils {
                 command.setStatus(CommandStatus.FAILURE);
             }
         } else {
-            ResponseEntity<R_OVER> res = restTemplate.exchange(url.toString(), httpMethod, getRequestEntity(command.getParameters(), token), resulTypetOverride);
+            ResponseEntity<R_OVER> res = restTemplate.exchange(url.toString(), httpMethod, getRequestEntity(client.getUserAgent(), command.getParameters(), token), resulTypetOverride);
             if(res.getStatusCode() == HttpStatus.OK){
                 command.setStatus(CommandStatus.SUCCESS);
             } else {
@@ -135,7 +135,7 @@ public class ClientUtils {
     /**
      * @return the requestEntity
      */
-    private <T> HttpEntity<T> getRequestEntity(T body, String token, MediaType...mediaTypes ) {
+    private <T> HttpEntity<T> getRequestEntity(String userAgent, T body, String token, MediaType...mediaTypes ) {
 
         if( null == mediaTypes || mediaTypes.length == 0 ) {
             mediaTypes = new MediaType[ 1 ];
@@ -150,7 +150,9 @@ public class ClientUtils {
         requestHeaders.setAccept( Arrays.asList(mediaTypes) );
         requestHeaders.add( "Accept-Encoding", "deflate" );
         requestHeaders.add( "Connection", "Close" );
-        requestHeaders.add( "User-Agent", "tikinou-sd-api" );
+        if(userAgent == null)
+            userAgent = "tikinou-sd-api";
+        requestHeaders.add( "User-Agent", userAgent);
         if(token != null)
             requestHeaders.add("token", token);
         return new HttpEntity<>(body,  requestHeaders );

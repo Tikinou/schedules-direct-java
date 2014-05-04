@@ -21,6 +21,8 @@ import com.tikinou.schedulesdirect.core.ParameterizedCommand;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
 import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsCommand;
 import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsParameters;
+import com.tikinou.schedulesdirect.core.commands.image.GetImageCommand;
+import com.tikinou.schedulesdirect.core.commands.image.GetImageParameters;
 import com.tikinou.schedulesdirect.core.commands.lineup.*;
 import com.tikinou.schedulesdirect.core.commands.program.GetProgramsCommand;
 import com.tikinou.schedulesdirect.core.commands.program.GetProgramsCommandParameters;
@@ -49,7 +51,7 @@ public class SchedulesDirectClientImplTest {
     public void setUp() throws Exception {
         ApplicationContext ctxt = new AnnotationConfigApplicationContext(SchedulesDirectConfig.class);
         client = ctxt.getBean(SchedulesDirectClient.class);
-        client.setup(SchedulesDirectApiVersion.VERSION_20131021, true);
+        client.setup(SchedulesDirectApiVersion.VERSION_20131021, null, true);
     }
 
     @Test
@@ -72,7 +74,7 @@ public class SchedulesDirectClientImplTest {
 
     @Test(expected = VersionNotSupportedException.class)
     public void testUnknownVersion() throws Exception{
-        client.setup(null, false);
+        client.setup(null, null, false);
     }
 
 
@@ -102,6 +104,16 @@ public class SchedulesDirectClientImplTest {
         cmd.setParameters(new GetProgramsCommandParameters(Arrays.asList("MV003954050000")));
         executeCommand(cmd);
     }
+
+    @Test
+    public void testImage() throws Exception {
+        Credentials credentials = connect();
+        GetImageCommand  cmd = client.createCommand(GetImageCommand.class);
+        cmd.setParameters(new GetImageParameters("assets/p3561420_b_v5_aa.jpg"));
+        executeCommand(cmd);
+    }
+
+
 
     @Test
     public void testSchedules() throws Exception {
