@@ -45,6 +45,7 @@ public class GetImageCommandImpl extends AbstractGetImageCommand {
                 return;
             GetImageResult r = new GetImageResult();
             r.setImage(res);
+            setStatus(CommandStatus.SUCCESS);
             setResults(r);
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
