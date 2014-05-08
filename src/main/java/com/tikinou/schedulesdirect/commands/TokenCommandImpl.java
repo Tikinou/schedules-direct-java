@@ -37,7 +37,7 @@ public class TokenCommandImpl extends AbstractTokenCommand {
 
 
     @Override
-    public void execute(SchedulesDirectClient client) {
+    public void execute(SchedulesDirectClient client, int numRetries) {
         ClientUtils clientUtils = ClientUtils.getInstance();
         try{
             setStatus(CommandStatus.RUNNING);

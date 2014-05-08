@@ -22,12 +22,12 @@ import com.tikinou.schedulesdirect.core.commands.headend.AbstractGetHeadendsComm
 import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsCommand;
 import com.tikinou.schedulesdirect.core.commands.headend.GetHeadendsResult;
 import com.tikinou.schedulesdirect.core.domain.CommandStatus;
-import com.tikinou.schedulesdirect.core.domain.Country;
 import com.tikinou.schedulesdirect.core.domain.postalcode.DefaultPostalCodeFormatter;
 import com.tikinou.schedulesdirect.core.domain.postalcode.PostalCodeFormatter;
 import com.tikinou.schedulesdirect.core.exceptions.ValidationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * @author Sebastien Astie
@@ -37,13 +37,20 @@ public class GetHeadendsCommandImpl extends AbstractGetHeadendsCommand {
     private static PostalCodeFormatter POSTAL_CODE_FORMATTER = new DefaultPostalCodeFormatter();
 
     @Override
-    public void execute(SchedulesDirectClient client) {
+    public void execute(SchedulesDirectClient client, int numRetries) {
         ClientUtils clientUtils = ClientUtils.getInstance();
         try{
             clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            clientUtils.executeRequest(client,this, GetHeadendsResult.class);
+            while(numRetries >= 0) {
+                try {
+                    clientUtils.executeRequest(client,this, GetHeadendsResult.class);
+                    break;
+                } catch (HttpClientErrorException ex) {
+                    numRetries = clientUtils.retryConnection(client, getParameters(), ex, numRetries);
+                }
+            }
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);

@@ -21,11 +21,11 @@ import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
 import com.tikinou.schedulesdirect.core.commands.image.AbstractGetImageCommand;
 import com.tikinou.schedulesdirect.core.commands.image.GetImageResult;
 import com.tikinou.schedulesdirect.core.commands.status.GetStatusCommand;
-import com.tikinou.schedulesdirect.core.commands.status.GetStatusResult;
 import com.tikinou.schedulesdirect.core.domain.CommandStatus;
 import com.tikinou.schedulesdirect.core.exceptions.ValidationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * @author Sebastien Astie.
@@ -34,19 +34,26 @@ public class GetImageCommandImpl extends AbstractGetImageCommand {
     private static Log LOG = LogFactory.getLog(GetStatusCommand.class);
 
     @Override
-    public void execute(SchedulesDirectClient client) {
+    public void execute(SchedulesDirectClient client, int numRetries) {
         ClientUtils clientUtils = ClientUtils.getInstance();
         try{
             clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            byte[] res = clientUtils.executeRequest(client,this, GetImageResult.class, byte[].class);
-            if(res == null)
-                return;
-            GetImageResult r = new GetImageResult();
-            r.setImage(res);
-            setStatus(CommandStatus.SUCCESS);
-            setResults(r);
+            while(numRetries >= 0) {
+                try {
+                    byte[] res = clientUtils.executeRequest(client,this, GetImageResult.class, byte[].class);
+                    if(res == null)
+                        return;
+                    GetImageResult r = new GetImageResult();
+                    r.setImage(res);
+                    setStatus(CommandStatus.SUCCESS);
+                    setResults(r);
+                    break;
+                } catch (HttpClientErrorException ex) {
+                    numRetries = clientUtils.retryConnection(client, getParameters(), ex, numRetries);
+                }
+            }
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);

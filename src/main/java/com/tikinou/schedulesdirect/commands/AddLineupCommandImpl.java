@@ -22,12 +22,9 @@ import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
 import com.tikinou.schedulesdirect.core.commands.lineup.LineupCommandResult;
 import com.tikinou.schedulesdirect.core.domain.CommandStatus;
 import com.tikinou.schedulesdirect.core.exceptions.ValidationException;
-import com.tikinou.schedulesdirect.core.jackson.ModuleRegistration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.client.HttpClientErrorException;
-
-import java.io.IOException;
 
 /**
  * @author Sebastien Astie
@@ -36,13 +33,20 @@ public class AddLineupCommandImpl extends AbstractAddLineupCommand {
     private static Log LOG = LogFactory.getLog(AddLineupCommandImpl.class);
 
     @Override
-    public void execute(SchedulesDirectClient client) {
+    public void execute(SchedulesDirectClient client, int numRetries) {
         ClientUtils clientUtils = ClientUtils.getInstance();
         try{
             clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            clientUtils.executeRequest(client, this, LineupCommandResult.class);
+            while(numRetries >= 0) {
+                try {
+                    clientUtils.executeRequest(client, this, LineupCommandResult.class);
+                    break;
+                } catch (HttpClientErrorException ex) {
+                    numRetries = clientUtils.retryConnection(client, getParameters(), ex, numRetries);
+                }
+            }
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);

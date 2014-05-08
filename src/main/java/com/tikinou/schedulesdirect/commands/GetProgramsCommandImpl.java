@@ -19,7 +19,6 @@ package com.tikinou.schedulesdirect.commands;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tikinou.schedulesdirect.ClientUtils;
 import com.tikinou.schedulesdirect.core.SchedulesDirectClient;
-import com.tikinou.schedulesdirect.core.commands.BaseCommandResult;
 import com.tikinou.schedulesdirect.core.commands.program.AbstractGetProgramsCommand;
 import com.tikinou.schedulesdirect.core.commands.program.GetProgramsCommand;
 import com.tikinou.schedulesdirect.core.commands.program.GetProgramsCommandResult;
@@ -29,6 +28,7 @@ import com.tikinou.schedulesdirect.core.exceptions.ValidationException;
 import com.tikinou.schedulesdirect.core.jackson.ModuleRegistration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
@@ -41,35 +41,21 @@ import java.util.List;
 public class GetProgramsCommandImpl extends AbstractGetProgramsCommand {
     private static Log LOG = LogFactory.getLog(GetProgramsCommand.class);
     @Override
-    public void execute(SchedulesDirectClient client) {
+    public void execute(SchedulesDirectClient client, int numRetries) {
         ClientUtils clientUtils = ClientUtils.getInstance();
         try{
             clientUtils.failIfUnauthenticated(client.getCredentials());
             setStatus(CommandStatus.RUNNING);
             validateParameters();
-            String res = clientUtils.executeRequest(client,this, GetProgramsCommandResult.class, String.class);
-            if(res == null)
-                return;
-            List<ProgramSD> list = new ArrayList<>();
-            ObjectMapper mapper = ModuleRegistration.getInstance().getConfiguredObjectMapper();
-            String line = null;
-            try (BufferedReader reader = new BufferedReader(new StringReader(res))){
-                line = reader.readLine();
-                while(line != null){
-                    ProgramSD val = mapper.readValue(line, ProgramSD.class);
-                    if(val != null)
-                        list.add(val);
-                    line = reader.readLine();
+            while(numRetries >= 0) {
+                try {
+                    coreExecute(client, clientUtils);
+                    break;
+                } catch (HttpClientErrorException ex) {
+                    numRetries = clientUtils.retryConnection(client, getParameters(), ex, numRetries);
                 }
-            }catch (Exception e){
-                System.out.println(e.getMessage());
-                System.out.println(line);
             }
-            if(!list.isEmpty()) {
-                GetProgramsCommandResult result = new GetProgramsCommandResult();
-                result.setPrograms(list);
-                setResults(result);
-            }
+
         } catch (Exception e){
             LOG.error("Error while executing command.", e);
             setStatus(CommandStatus.FAILURE);
@@ -83,5 +69,28 @@ public class GetProgramsCommandImpl extends AbstractGetProgramsCommand {
         assert getParameters() != null;
         if (getParameters().getProgramIds() == null || getParameters().getProgramIds().isEmpty())
             throw new ValidationException("programIds parameter is required");
+    }
+
+    private void coreExecute(SchedulesDirectClient client, ClientUtils clientUtils) throws Exception {
+        String res = clientUtils.executeRequest(client,this, GetProgramsCommandResult.class, String.class);
+        if(res == null)
+            return;
+        List<ProgramSD> list = new ArrayList<>();
+        ObjectMapper mapper = ModuleRegistration.getInstance().getConfiguredObjectMapper();
+        String line = null;
+        try (BufferedReader reader = new BufferedReader(new StringReader(res))){
+            line = reader.readLine();
+            while(line != null){
+                ProgramSD val = mapper.readValue(line, ProgramSD.class);
+                if(val != null)
+                    list.add(val);
+                line = reader.readLine();
+            }
+        }
+        if(!list.isEmpty()) {
+            GetProgramsCommandResult result = new GetProgramsCommandResult();
+            result.setPrograms(list);
+            setResults(result);
+        }
     }
 }

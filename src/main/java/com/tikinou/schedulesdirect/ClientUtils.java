@@ -173,4 +173,17 @@ public class ClientUtils {
         }
         return result;
     }
+
+    public int retryConnection(SchedulesDirectClient client, AuthenticatedBaseCommandParameter params, HttpClientErrorException ex, int numRetries) throws Exception {
+        numRetries--;
+        if(numRetries < 0)
+            throw ex;
+        if(ex.getStatusCode() == HttpStatus.FORBIDDEN) {
+            client.getCredentials().resetTokenInfo();
+            params.setToken(null);
+            client.connect(client.getCredentials(), false);
+            params.setToken(client.getCredentials().getToken());
+        }
+        return numRetries;
+    }
 }

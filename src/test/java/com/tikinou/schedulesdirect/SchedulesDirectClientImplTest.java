@@ -45,6 +45,7 @@ import java.util.Arrays;
  * @author Sebastien Astie
  */
 public class SchedulesDirectClientImplTest {
+    private static final int NUM_RETRIES = 2;
     private SchedulesDirectClient client;
 
     @Before
@@ -83,7 +84,7 @@ public class SchedulesDirectClientImplTest {
         Credentials credentials = connect();
         GetStatusCommand cmd = client.createCommand(GetStatusCommand.class);
         cmd.setParameters(new GetStatusCommandParameters());
-        executeCommand(cmd);
+        executeCommand(cmd, NUM_RETRIES);
     }
 
     @Test
@@ -91,7 +92,7 @@ public class SchedulesDirectClientImplTest {
         Credentials credentials = connect();
         GetLineupDetailsCommand cmd = client.createCommand(GetLineupDetailsCommand.class);
         cmd.setParameters(new LineupCommandParameters("USA-NY67791-X"));
-        executeCommand(cmd);
+        executeCommand(cmd, NUM_RETRIES);
         GetLineupDetailsResult result = cmd.getResults();
         assert result != null;
     }
@@ -102,7 +103,7 @@ public class SchedulesDirectClientImplTest {
         GetProgramsCommand cmd = client.createCommand(GetProgramsCommand.class);
 //        cmd.setParameters(new GetProgramsCommandParameters(Arrays.asList("EP017398160007", "SH013762600000", "MV003954050000")));
         cmd.setParameters(new GetProgramsCommandParameters(Arrays.asList("MV003954050000")));
-        executeCommand(cmd);
+        executeCommand(cmd, NUM_RETRIES);
     }
 
     @Test
@@ -110,7 +111,8 @@ public class SchedulesDirectClientImplTest {
         Credentials credentials = connect();
         GetImageCommand  cmd = client.createCommand(GetImageCommand.class);
         cmd.setParameters(new GetImageParameters("assets/p3561420_b_v5_aa.jpg"));
-        executeCommand(cmd);
+        executeCommand(cmd, NUM_RETRIES);
+
     }
 
 
@@ -120,7 +122,7 @@ public class SchedulesDirectClientImplTest {
         Credentials credentials = connect();
         GetSchedulesCommand cmd = client.createCommand(GetSchedulesCommand.class);
         cmd.setParameters(new GetSchedulesCommandParameters(Arrays.asList("16689", "20360", "20453", "21868")));
-        executeCommand(cmd);
+        executeCommand(cmd, NUM_RETRIES);
     }
 
     @Test
@@ -128,7 +130,7 @@ public class SchedulesDirectClientImplTest {
         Credentials credentials = connect();
         GetSubscribedLineupsCommand cmd = client.createCommand(GetSubscribedLineupsCommand.class);
         cmd.setParameters(new GetSubscribedLineupsCommandParameters());
-        executeCommand(cmd);
+        executeCommand(cmd, NUM_RETRIES);
     }
 
     @Test
@@ -139,7 +141,7 @@ public class SchedulesDirectClientImplTest {
         parameters.setCountry(Country.UnitedStates);
         parameters.setPostalCode("10562");
         cmd.setParameters(parameters);
-        executeCommand(cmd);
+        executeCommand(cmd, NUM_RETRIES);
     }
 
     public void testAddAndDeleteLineups() throws Exception{
@@ -149,7 +151,7 @@ public class SchedulesDirectClientImplTest {
         parameters.setCountry(Country.UnitedStates);
         parameters.setPostalCode("94002");
         cmd.setParameters(parameters);
-        executeCommand(cmd);
+        executeCommand(cmd, NUM_RETRIES);
         System.out.println("Got Headends, try to find the first one and add it");
         assert !cmd.getResults().getHeadends().isEmpty();
         Headend headend = cmd.getResults().getHeadends().values().iterator().next();
@@ -159,12 +161,12 @@ public class SchedulesDirectClientImplTest {
         LineupCommandParameters p = new LineupCommandParameters(id);
         mcmd.setParameters(p);
         System.out.println("Adding lineup " + p.getLineupId());
-        executeCommand(mcmd);
+        executeCommand(mcmd, NUM_RETRIES);
         System.out.println("Added lineup " + p.getLineupId());
         mcmd = client.createCommand(AbstractDeleteLineupCommand.class);
         mcmd.setParameters(p);
         System.out.println("Deleting lineup " + p.getLineupId());
-        executeCommand(mcmd);
+        executeCommand(mcmd, NUM_RETRIES);
         System.out.println("Deleted lineup " + p.getLineupId());
     }
 
@@ -174,8 +176,8 @@ public class SchedulesDirectClientImplTest {
         return credentials;
     }
 
-    private void executeCommand(ParameterizedCommand cmd) throws Exception{
-        client.execute(cmd);
+    private void executeCommand(ParameterizedCommand cmd, int numRetries) throws Exception{
+        client.execute(cmd, numRetries);
         System.out.println(cmd.getResults());
         assert cmd.getStatus() == CommandStatus.SUCCESS;
     }
